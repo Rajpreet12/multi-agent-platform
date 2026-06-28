@@ -1,0 +1,60 @@
+pipeline {
+  agent any
+
+  environment {
+    AWS_REGION      = "us-east-1"
+    AWS_ACCOUNT_ID  = "903584666644"
+    ECR_REPO        = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/multi-agent-backend"
+    IMAGE_TAG       = "${BUILD_NUMBER}"
+    NAMESPACE       = "multi-agent"
+  }
+
+  stages {
+    stage("Checkout") {
+      steps {
+        checkout scm
+      }
+    }
+
+    stage("Build & Push to ECR") {
+      steps {
+        withAWS(region: "${AWS_REGION}", credentials: "aws-credentials") {
+          sh """
+            aws ecr get-login-password --region ${AWS_REGION} | \
+              docker login --username AWS --password-stdin ${ECR_REPO}
+            docker build -t ${ECR_REPO}:${IMAGE_TAG} -t ${ECR_REPO}:latest ./app/backend
+            docker push ${ECR_REPO}:${IMAGE_TAG}
+            docker push ${ECR_REPO}:latest
+          """
+        }
+      }
+    }
+
+    stage("Deploy to EKS") {
+      steps {
+        withAWS(region: "${AWS_REGION}", credentials: "aws-credentials") {
+          sh """
+            aws eks update-kubeconfig --region ${AWS_REGION} --name multi-agent-test-cluster
+            kubectl apply -f monitoring
+            kubectl apply -f k8s/base
+            kubectl set image deployment/multi-agent-backend \
+              backend=${ECR_REPO}:${IMAGE_TAG} \
+              -n ${NAMESPACE}
+            kubectl rollout status deployment/multi-agent-backend -n ${NAMESPACE}
+            kubectl rollout status deployment/prometheus -n monitoring
+            kubectl rollout status deployment/grafana -n monitoring
+          """
+        }
+      }
+    }
+  }
+
+  post {
+    failure {
+      echo "Pipeline failed — rolling back"
+      withAWS(region: "${AWS_REGION}", credentials: "aws-credentials") {
+        sh "kubectl rollout undo deployment/multi-agent-backend -n ${NAMESPACE}"
+      }
+    }
+  }
+}
