@@ -76,6 +76,7 @@ pipeline {
           sh '''
             export AWS_DEFAULT_REGION="${AWS_REGION}"
             aws eks update-kubeconfig --region "${AWS_REGION}" --name "${CLUSTER_NAME}"
+            kubectl create namespace monitoring --dry-run=client -o yaml | kubectl apply -f -
             kubectl apply -f monitoring
             kubectl apply -f k8s/base
             kubectl set image deployment/multi-agent-backend backend="${ECR_REPO}:${IMAGE_TAG}" -n "${NAMESPACE}"
