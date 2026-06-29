@@ -35,7 +35,16 @@ pipeline {
       }
     }
 
-    stage('Build & Push to ECR') {
+    stage('Build Backend') {
+      steps {
+        sh '''
+          cd app/backend
+          npm install
+        '''
+      }
+    }
+
+    stage('Build and Push to ECR') {
       steps {
         withCredentials([
           usernamePassword(
@@ -81,7 +90,7 @@ pipeline {
 
   post {
     failure {
-      echo 'Pipeline failed — rolling back'
+      echo 'Pipeline failed — rolling back deployment'
       withCredentials([
         usernamePassword(
           credentialsId: 'aws-credentials',
