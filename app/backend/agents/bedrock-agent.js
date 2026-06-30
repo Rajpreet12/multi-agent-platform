@@ -8,7 +8,7 @@ const client = new BedrockRuntimeClient({
 // Default to Claude Sonnet 4.5 if BEDROCK_MODEL_ID is not set
 const MODEL_ID =
   process.env.BEDROCK_MODEL_ID ||
-  "anthropic.claude-sonnet-4-5-20250929-v1:0";
+  "anthropic.claude-sonnet-4-20250514-v1:0";
 
 if (!process.env.BEDROCK_MODEL_ID) {
   console.warn(
@@ -43,7 +43,12 @@ async function invokeBedrockAgent(prompt) {
     messages: [
       {
         role: "user",
-        content: prompt,
+        content: [
+          {
+            type: "text",
+            text: prompt,
+          },
+        ],
       },
     ],
   });

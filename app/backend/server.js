@@ -78,3 +78,38 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Backend running on port ${PORT}`);
 });
+app.post("/chat", async (req, res) => {
+  const { prompt } = req.body;
+
+  if (!prompt) {
+    return res.status(400).json({
+      error: "prompt is required"
+    });
+  }
+
+  const endTimer = bedrockLatency.startTimer();
+
+  try {
+    const response = await invokeBedrockAgent(prompt);
+
+    bedrockRequestCounter.inc({ status: "success" });
+    endTimer({ status: "success" });
+
+    res.json({
+      agent: "DevOps AI Agent",
+      model: "Amazon Bedrock Claude",
+      response: response
+    });
+
+  } catch (err) {
+
+    bedrockRequestCounter.inc({ status: "failure" });
+    endTimer({ status: "failure" });
+
+    console.error("Chat Bedrock error:", err);
+
+    res.status(500).json({
+      error: "Failed to invoke Bedrock agent"
+    });
+  }
+});

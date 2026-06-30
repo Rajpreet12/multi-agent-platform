@@ -8,6 +8,15 @@
         "bedrock:InvokeModelWithResponseStream"
       ],
       "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "aws-marketplace:Subscribe",
+        "aws-marketplace:Unsubscribe",
+        "aws-marketplace:ViewSubscriptions"
+      ],
+      "Resource": "*"
     }
   ]
 }

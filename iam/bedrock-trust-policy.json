@@ -1,17 +1,18 @@
 {
-	"Version": "2012-10-17",
-	"Statement": [
-		{
-			"Effect": "Allow",
-			"Principal": {
-				"Federated": "arn:aws:iam::903584666644:oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/YOUR_OIDC_ID"
-			},
-			"Action": "sts:AssumeRoleWithWebIdentity",
-			"Condition": {
-				"StringEquals": {
-					"oidc.eks.us-east-1.amazonaws.com/id/61C6E8E33EFA987F6AB51BD59EFEBC98:sub": "system:serviceaccount:multi-agent:multi-agent-backend-sa"
-				}
-			}
-		}
-	]
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "Federated": "arn:aws:iam::903584666644:oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/61C6E8E33EFA987F6AB51BD59EFEBC98"
+            },
+            "Action": "sts:AssumeRoleWithWebIdentity",
+            "Condition": {
+                "StringEquals": {
+                    "oidc.eks.us-east-1.amazonaws.com/id/61C6E8E33EFA987F6AB51BD59EFEBC98:sub": "system:serviceaccount:default:bedrock-agent-sa",
+                    "oidc.eks.us-east-1.amazonaws.com/id/61C6E8E33EFA987F6AB51BD59EFEBC98:aud": "sts.amazonaws.com"
+                }
+            }
+        }
+    ]
 }
